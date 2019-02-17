@@ -1,6 +1,98 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
   "parameters": {
+    "location": {
+      "value": "australiaeast"
+    },
+    "networkInterfaceName": {
+      "value": "armdeploydemovm730"
+    },
+    "networkSecurityGroupName": {
+      "value": "ARMDeployDemoVM-nsg"
+    },
+    "networkSecurityGroupRules": {
+      "value": [
+        {
+          "name": "RDP",
+          "properties": {
+            "priority": 300,
+            "protocol": "TCP",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceAddressPrefix": "*",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "3389"
+          }
+        }
+      ]
+    },
+    "subnetName": {
+      "value": "default"
+    },
+    "virtualNetworkName": {
+      "value": "ARMDeployDemoRG-vnet"
+    },
+    "addressPrefixes": {
+      "value": [
+        "10.0.0.0/24"
+      ]
+    },
+    "subnets": {
+      "value": [
+        {
+          "name": "default",
+          "properties": {
+            "addressPrefix": "10.0.0.0/24"
+          }
+        }
+      ]
+    },
+    "publicIpAddressName": {
+      "value": "ARMDeployDemoVM-ip"
+    },
+    "publicIpAddressType": {
+      "value": "Dynamic"
+    },
+    "publicIpAddressSku": {
+      "value": "Basic"
+    },
+    "virtualMachineName": {
+      "value": "ARMDeployDemoVM"
+    },
+    "virtualMachineRG": {
+      "value": "ARMDeployDemoRG"
+    },
+    "diskNameSalt": {
+      "value": "20190210083931"
+    },
+    "storageAccountName": {
+      "value": "blobdiskstroage"
+    },
+    "virtualMachineSize": {
+      "value": "Standard_B1s"
+    },
+    "adminUsername": {
+      "value": "Venkat"
+    },
+    "adminPassword": {
+      "value": "MicrosoftAzure001$"
+    },
+    "autoShutdownStatus": {
+      "value": "Enabled"
+    },
+    "autoShutdownTime": {
+      "value": "19:00"
+    },
+    "autoShutdownTimeZone": {
+      "value": "UTC"
+    },
+    "autoShutdownNotificationStatus": {
+      "value": "Disabled"
+    },
+    "autoShutdownNotificationLocale": {
+      "value": "en"
+    }
   }
 }
