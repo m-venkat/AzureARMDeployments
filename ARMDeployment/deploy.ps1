@@ -1,49 +1,16 @@
-<#
- .SYNOPSIS
-    Deploys a template to Azure
-
- .DESCRIPTION
-    Deploys an Azure Resource Manager template
-
- .PARAMETER subscriptionId
-    The subscription id where the template will be deployed.
-
- .PARAMETER resourceGroupName
-    The resource group where the template will be deployed. Can be the name of an existing or a new resource group.
-
- .PARAMETER resourceGroupLocation
-    Optional, a resource group location. If specified, will try to create a new resource group in this location. If not specified, assumes resource group is existing.
-
- .PARAMETER deploymentName
-    The deployment name.
-
- .PARAMETER templateFilePath
-    Optional, path to the template file. Defaults to template.json.
-
- .PARAMETER parametersFilePath
-    Optional, path to the parameters file. Defaults to parameters.json. If file is not found, will prompt for parameter values based on template.
-#>
 
 param(
  
-
-
  [string]
  $resourceGroupName = "ARMDeployDemoRG",
-
  [string]
  $subscriptionId = "016ee3d9-5ce9-4f39-a2e4-149aa3dbd010",
-
  [string]
- $resourceGroupLocation,
-
- [Parameter(Mandatory=$True)]
+ $resourceGroupLocation ="australiaeast",
  [string]
- $deploymentName,
-
+ $deploymentName= "ARMDeploymentDemo",
  [string]
  $templateFilePath = "azuredeploy.json",
-
  [string]
  $parametersFilePath = "azuredeploy.parameters.json"
 )
@@ -68,22 +35,35 @@ Function RegisterRP {
 $ErrorActionPreference = "Stop"
 
 # sign in
-Write-Host "Logging in...";
+Write-Host "Logging in to the acount...";
 Login-AzureRmAccount;
 
-
+Write-Host "Deleting the storge disk (vhd)";
 
 $RGName = "blobdiskstorage"
 $SAName = "blobdiskstroage"
-$ConName = "vhds"
+$ContainerName = "vhds"
 $BlobName = "ARMDeployDemoVM20190210083931.vhd"
 $Keylist = Get-AzureRmStorageAccountKey -ResourceGroupName $RGName -StorageAccountName $SAName
-if($Keylist.length >0) {
-$Key = $Keylist[0].Value
-$Ctx = New-AzureStorageContext -StorageAccountName $SAName -StorageAccountKey $Key
-Write-Host "Deleting the Disk '$BlobName'";
-Remove-AzureStorageBlob -Container $ConName -Blob $BlobName -Context $Ctx
-Write-Host "Deleting the Disk '$Deleted'";
+
+if($Keylist) 
+{
+    $Key = $Keylist[0].Value
+    $storageContext = New-AzureStorageContext -StorageAccountName $SAName -StorageAccountKey $Key
+    $blob = Get-AzureStorageBlob -Context $storageContext -Container  $ContainerName -Blob $BlobName -ErrorAction Ignore  
+    if($blob)
+    { 
+        $leaseStatus = $blob.ICloudBlob.Properties.LeaseStatus
+        Write-Host "Lease Status $leaseStatus"
+        if($leaseStatus -eq "Locked")
+        {
+            $blob.ICloudBlob.BreakLeaseAsync($(New-TimeSpan), $null, $null, $null)
+            Write-Host "Blob Lease Released"
+        }
+         Write-Host "Deleting the Disk '$BlobName'";
+        Remove-AzureStorageBlob -Container $ContainerName -Blob $BlobName -Context $storageContext
+        Write-Host "Deleting the Disk '$Deleted'";
+    }
 }
 
 
@@ -103,18 +83,27 @@ if($resourceProviders.length) {
 
 #Create or check for existing resource group
 $resourceGroup = Get-AzureRmResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
-if(!$resourceGroup)
+if($resourceGroup)
 {
-    Write-Host "Resource group '$resourceGroupName' does not exist. To create a new resource group, please enter a location.";
-    if(!$resourceGroupLocation) {
-        $resourceGroupLocation = Read-Host "resourceGroupLocation";
-    }
-    Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
+     Remove-AzResourceGroup -Name $resourceGroupName -Force
+     Write-Host "Deleted Resource Group :$resourceGroupName";
+}
+Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
     New-AzureRmResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation
-}
-else{
-    Write-Host "Using existing resource group '$resourceGroupName'";
-}
+
+
+#if(!$resourceGroup)
+#{
+#    Write-Host "Resource group '$resourceGroupName' does not exist. To create a new resource group, please enter a location.";
+#    if(!$resourceGroupLocation) {
+#        $resourceGroupLocation = Read-Host "resourceGroupLocation";
+#    }
+#    Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
+#    New-AzureRmResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation
+#}
+#else{
+#    Write-Host "Using existing resource group '$resourceGroupName'";
+#}
 
 # Start the deployment
 Write-Host "Starting deployment...";
