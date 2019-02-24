@@ -91,10 +91,81 @@ if($resourceGroup)
 Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
     New-AzureRmResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation
 
+
+#if(!$resourceGroup)
+#{
+#    Write-Host "Resource group '$resourceGroupName' does not exist. To create a new resource group, please enter a location.";
+#    if(!$resourceGroupLocation) {
+#        $resourceGroupLocation = Read-Host "resourceGroupLocation";
+#    }
+#    Write-Host "Creating resource group '$resourceGroupName' in location '$resourceGroupLocation'";
+#    New-AzureRmResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation
+#}
+#else{
+#    Write-Host "Using existing resource group '$resourceGroupName'";
+#}
+
+#Hashtable
+
+
+$templateParametersHashTable =
+@{
+    location = "australiaeast";
+    networkInterfaceName = "armdeploydemovm730";
+    networkSecurityGroupName  = "ARMDeployDemoVM-nsg";
+	networkSecurityGroupRules = @(
+		@{
+            name = "RDP";
+                  properties = @{
+                    priority = 300;
+                    protocol = "Tcp";
+                    access  = "Allow";
+                    direction  = "Inbound";
+                    sourceAddressPrefix  = "*";
+                    sourcePortRange  = "*";
+                    destinationAddressPrefix  = "*";
+                    destinationPortRange  = "3389";
+                  }
+        }
+	);
+	subnets =@(
+		@{
+           name = "default";
+           properties = @{
+           addressPrefix = "10.0.0.0/24"
+           }
+        }
+	);
+    subnetName = "default";
+    virtualNetworkName= "ARMDeployDemoRG-vnet"; 
+    addressPrefixes =  @("10.0.0.0/24");
+    publicIpAddressName  =  "ARMDeployDemoVM-ip";
+    publicIpAddressType =  "Dynamic";
+    publicIpAddressSku = "Basic";
+    virtualMachineName = "ARMDeployDemoVM";
+    virtualMachineRG ="ARMDeployDemoRG";
+    diskNameSalt = "20190210083931";
+    storageAccountName = "blobdiskstroage";
+    virtualMachineSize = "Standard_B1s";
+    adminUsername = "Venkat";
+    adminPassword = "MicrosoftAzure001$";
+    autoShutdownStatus =  "Enabled";
+    autoShutdownTime = "19:00";
+    autoShutdownTimeZone = "UTC";
+    autoShutdownNotificationStatus = "Disabled";
+    autoShutdownNotificationLocale = "en";
+ }
+
+
+
 # Start the deployment
+<#
 Write-Host "Starting deployment...";
 if(Test-Path $parametersFilePath) {
     New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile $templateFilePath -TemplateParameterFile $parametersFilePath;
 } else {
     New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile $templateFilePath;
 }
+#>
+Write-Host "Starting deployment...";
+New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile $templateFilePath -TemplateParameterObject $templateParametersHashTable;
