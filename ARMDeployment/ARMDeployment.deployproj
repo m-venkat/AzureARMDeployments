@@ -23,9 +23,12 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
-    <Content Include="azuredeploy.json" />
-    <Content Include="azuredeploy.parameters.json" />
-    <None Include="deploy.ps1" />
+    <Content Include="v2\azuredeploy.json" />
+    <Content Include="v2\azuredeploy.parameters.json" />
+    <Content Include="v1\azuredeploy.json" />
+    <Content Include="v1\azuredeploy.parameters.json" />
+    <None Include="v2\deploy.ps1" />
+    <None Include="v1\deploy.ps1" />
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>

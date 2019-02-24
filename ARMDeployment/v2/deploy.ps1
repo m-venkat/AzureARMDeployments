@@ -153,7 +153,7 @@ $templateParametersHashTable =
     autoShutdownTime = "19:00";
     autoShutdownTimeZone = "UTC";
     autoShutdownNotificationStatus = "Disabled";
-   autoShutdownNotificationLocale = "en";
+    autoShutdownNotificationLocale = "en";
  }
 
 
