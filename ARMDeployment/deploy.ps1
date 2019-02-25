@@ -36,7 +36,16 @@ $ErrorActionPreference = "Stop"
 
 # sign in
 Write-Host "Logging in to the acount...";
-Login-AzureRmAccount;
+
+$username = [System.Environment]::GetEnvironmentVariable("AzureUserId","User");
+$password = [System.Environment]::GetEnvironmentVariable("AzurePassword","User");
+$securepasswd = ConvertTo-SecureString $password -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential ($username, $securepasswd)
+Connect-AzureRmAccount -Credential $cred
+
+# select subscription
+Write-Host "Selecting subscription '$subscriptionId'";
+Select-AzureRmSubscription -SubscriptionID $subscriptionId;
 
 Write-Host "Deleting the storge disk (vhd)";
 
@@ -68,9 +77,7 @@ if($Keylist)
 
 
 
-# select subscription
-Write-Host "Selecting subscription '$subscriptionId'";
-Select-AzureRmSubscription -SubscriptionID $subscriptionId;
+
 
 # Register RPs
 $resourceProviders = @("microsoft.network","microsoft.compute","microsoft.devtestlab");

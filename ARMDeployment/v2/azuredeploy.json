@@ -168,39 +168,38 @@
                 },
               "storageProfile": {
                 "osDisk": {
-                  "createOption": "fromImage",
+                  "createOption": "FromImage",
                   "vhd": {
-                    "uri": "[concat(variables('storageContainerUri'), parameters('virtualMachineName'), parameters('diskNameSalt'), '.vhd')]"
+                    "uri": "[concat(variables('storageContainerUri'), parameters('virtualMachineName'), '_os', '.vhd')]"
                   },
-                  "name": "[parameters('virtualMachineName')]",
-                  "diskSizeGB": "128"
+                  "name": "[concat(parameters('virtualMachineName'),'osdisk')]",
+                  "diskSizeGB": 128
+                },
+                "imageReference": {
+                  //"publisher": "Canonical",
+                  //"offer": "UbuntuServer",
+                  //"sku": "18.04-LTS",
+                  //"version": "latest",
 
+                  "publisher": "MicrosoftWindowsDesktop",
+                  "offer": "Windows-10",
+                  "sku": "rs5-pro",
+                  "version": "latest"
                 },
                 "dataDisks": [
                   {
                     "lun": 1,
                     "Name": "DataDisk",
-                    "createOption": "fromImage",
-                    "diskSizeGB": "256",
+                    "createOption": "Empty",
+                    "diskSizeGB": 256,
                     "vhd": {
-                      "uri": "[concat(variables('storageContainerUri'), parameters('virtualMachineName'), parameters('diskNameSalt'),'data', '.vhd')]"
+                      "uri": "[concat(variables('storageContainerUri'), parameters('virtualMachineName'), '_data', '.vhd')]"
                     },
-                    "name": "[parameters('virtualMachineName')]"
-                  }
-                ],
-                  "imageReference"
-                  :
-                  {
-                    //"publisher": "Canonical",
-                    //"offer": "UbuntuServer",
-                    //"sku": "18.04-LTS",
-                    //"version": "latest",
 
-                    "publisher": "MicrosoftWindowsDesktop",
-                    "offer": "Windows-10",
-                    "sku": "rs5-pro",
-                    "version": "latest"
+                    "name": "[concat(parameters('virtualMachineName'),'datadisk')]"
                   }
+                ]
+
               },
                 "networkProfile": {
                     "networkInterfaces": [

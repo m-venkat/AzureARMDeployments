@@ -28,29 +28,11 @@ Function RegisterRP {
     Register-AzureRmResourceProvider -ProviderNamespace $ResourceProviderNamespace;
 }
 
-#******************************************************************************
-# Script body
-# Execution begins here
-#******************************************************************************
-$ErrorActionPreference = "Stop"
+Function DeleteVhd($StorageAccountName, $BlobName, $ContainerName){
+	Write-Host "Container Name :$ContainerName,  BlobName: $BlobName, StorageAccountName: $StorageAccountName";
+	$storageContext = New-AzureStorageContext -StorageAccountName $SAName -StorageAccountKey $Key
 
-# sign in
-Write-Host "Logging in to the acount...";
-Login-AzureRmAccount;
-
-Write-Host "Deleting the storge disk (vhd)";
-
-$RGName = "blobdiskstorage"
-$SAName = "blobdiskstroage"
-$ContainerName = "vhds"
-$BlobName = "ARMDeployDemoVM20190210083931.vhd"
-$Keylist = Get-AzureRmStorageAccountKey -ResourceGroupName $RGName -StorageAccountName $SAName
-
-if($Keylist) 
-{
-    $Key = $Keylist[0].Value
-    $storageContext = New-AzureStorageContext -StorageAccountName $SAName -StorageAccountKey $Key
-    $blob = Get-AzureStorageBlob -Context $storageContext -Container  $ContainerName -Blob $BlobName -ErrorAction Ignore  
+	$blob = Get-AzureStorageBlob -Context $storageContext -Container  $ContainerName -Blob $BlobName -ErrorAction Ignore  
     if($blob)
     { 
         $leaseStatus = $blob.ICloudBlob.Properties.LeaseStatus
@@ -62,15 +44,46 @@ if($Keylist)
         }
          Write-Host "Deleting the Disk '$BlobName'";
         Remove-AzureStorageBlob -Container $ContainerName -Blob $BlobName -Context $storageContext
-        Write-Host "Deleting the Disk '$Deleted'";
+        Write-Host "Deletion Successful '$BlobName'";
     }
 }
 
+#******************************************************************************
+# Script body
+# Execution begins here
+#******************************************************************************
+$ErrorActionPreference = "Stop"
 
+# sign in
+Write-Host "Logging in to the acount...";
+$username = [System.Environment]::GetEnvironmentVariable("AzureUserId","User");
+$password = [System.Environment]::GetEnvironmentVariable("AzurePassword","User");
+$securepasswd = ConvertTo-SecureString $password -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential ($username, $securepasswd)
+Connect-AzureRmAccount -Credential $cred
 
 # select subscription
 Write-Host "Selecting subscription '$subscriptionId'";
 Select-AzureRmSubscription -SubscriptionID $subscriptionId;
+
+Write-Host "Deleting the storge disk (vhd)";
+
+$RGName = "blobdiskstorage"
+$SAName = "blobdiskstroage"
+$ContainerName = "vhds"
+$BlobName = "ARMDeployDemoVM2_os.vhd"
+$Keylist = Get-AzureRmStorageAccountKey -ResourceGroupName $RGName -StorageAccountName $SAName
+
+if($Keylist) 
+{
+    $Key = $Keylist[0].Value;
+	Write-Host "Container Name :$ContainerName StorageAccountName: $SAName";
+	DeleteVhd $SAName "ARMDeployDemoVM2_os.vhd"   $ContainerName ;
+	DeleteVhd $SAName "ARMDeployDemoVM2_data.vhd" $ContainerName;
+    $storageContext = New-AzureStorageContext -StorageAccountName $SAName -StorageAccountKey $Key
+    
+}
+
 
 # Register RPs
 $resourceProviders = @("microsoft.network","microsoft.compute","microsoft.devtestlab");
